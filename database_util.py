@@ -13,38 +13,134 @@ from contextlib import contextmanager
 What methods do I need?
 
 Load the table from the database, probably into a dataframe
-
 """
 
-@contextmanager
-def db_connection(db_path):
-    conn = sqlite3.connect(db_path)
-    try:
-        yield conn
-    finally:
-        conn.close()
-        for i in range(1000): print("Connection closed.")
-
-
-class Base():
+def all_list_items_match(a_list, b_list):
     """
-    
+    Check if all the items are matching between 2 lists
+    Order agnostic
+    """
+    result = True
+    for a in a_list:
+        if a not in b_list:
+            result = False
+    for b in b_list:
+        if b not in a_list:
+            result = False
+    return result
+        
+
+class Database:
+    """
+    Database class to abstract sqlite3 ops into easy stuff
     """
     def __init__(self, filepath):
         """
         Bring up the class
         """
+        self.TABLE = 'test' # TODO find a way to not fix the table name
         filepath = str(filepath)
-        if ".db" not in str(filepath):
-            raise ValueError("Filepath is not correct")
+        if ".db" not in filepath:
+            raise ValueError("Need .db file")
         self.filepath = filepath
-        self.table_name = "Table"
 
-    def database_exist(self):
-        if os.path.exists(self.filepath):
-            return True
+    def load_database(self):
+        """
+        Load the database into a dataframe
+        """
+        # if the database does not exist
+        if not os.path.exists(self.filepath):
+            return pd.DataFrame()
+        
+        # Try to open it
+        try:
+            conn = sqlite3.connect(self.filepath)
+            query= "SELECT * from {}".format(self.TABLE)
+            df = pd.read_sql(query, conn)
+        except pd.errors.DatabaseError:
+            df = pd.DataFrame()
+        finally:
+            conn.close()
+        return df
+    
+    def _write_df_to_db(self, df, overwrite = False):
+        """
+        Write the dataframe to the database
+        """
+        if overwrite:
+            conn = sqlite3.connect(self.filepath)
+            df.to_sql(self.TABLE, conn, if_exists='replace', index = False)
+            conn.close()
         else:
-            return False
+            conn = sqlite3.connect(self.filepath)
+            df.to_sql(self.TABLE, conn, if_exists='append', index = False)
+            conn.close()
+    
+    def add_row(self, row_data):
+        """
+        Add a row to the database
+
+        TODO - if this gets slow, maybe look into appending
+        rows and not just overwriting the whole db
+        """
+        if type(row_data) is not dict: raise ValueError("provide dict")
+        
+        df = self.load_database()
+
+        if df.empty:
+            df = pd.DataFrame([row_data])
+            self._write_df_to_db(df, overwrite =True)
+
+        else:
+            existing_cols = df.columns.to_list()
+            new_cols = list(row_data.keys())
+
+            if all_list_items_match(existing_cols, new_cols):
+                new_df = pd.DataFrame([row_data])
+                df = pd.concat([df, new_df], ignore_index=True)
+                self._write_df_to_db(df, overwrite=True)
+            else:
+                pass
+                # soemthigs fucky
+
+            
+
+
+
+
+
+
+
+
+
+# @contextmanager
+# def db_connection(db_path):
+#     conn = sqlite3.connect(db_path)
+#     try:
+#         yield conn
+#     finally:
+#         conn.close()
+#         for i in range(1000): print("Connection closed.")
+
+# class Base():
+#     """
+    
+#     """
+#     def __init__(self, filepath):
+#         """
+#         Bring up the class
+#         """
+#         filepath = str(filepath)
+#         if ".db" not in str(filepath):
+#             raise ValueError("Filepath is not correct")
+#         self.filepath = filepath
+#         self.table_name = "Table"
+
+#     def database_exist(self):
+#         if os.path.exists(self.filepath):
+#             return True
+#         else:
+#             return False
 
     # def get_tables_present(self):
     #     """
