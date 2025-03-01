@@ -6,14 +6,10 @@ Written by b5050d
 Testing script for the databases script
 """
 
-import pytest
-import os
-
-from databases import (
-    ExpenseDatabase,
-    IncomesDatabase
-)
 import sqlite3
+import pytest
+from databases import ExpenseDatabase, IncomesDatabase
+
 
 @pytest.fixture()
 def provision_expense_database(tmp_path):
@@ -49,19 +45,23 @@ def test_query_existing_database_tables(provision_expense_database):
     # Create a database table
     with sqlite3.connect(expenses.database_path) as connection:
         cursor = connection.cursor()
-        cursor.execute("CREATE TABLE IF NOT EXISTS test_a (\n\tid INTEGER PRIMARY KEY AUTOINCREMENT,\n\tname TEXT)")
+        table_create = "CREATE TABLE IF NOT EXISTS"
+        values = "(\n\tid INTEGER PRIMARY KEY AUTOINCREMENT,\n\tname TEXT)"
+        cursor.execute(f"{table_create} test_a {values}")
 
     ans = expenses.query_existing_database_tables()
-    assert 'test_a' in ans
+    assert "test_a" in ans
 
     # Create another database table
     with sqlite3.connect(expenses.database_path) as connection:
         cursor = connection.cursor()
-        cursor.execute("CREATE TABLE IF NOT EXISTS test_b (\n\tid INTEGER PRIMARY KEY AUTOINCREMENT,\n\tname TEXT)")
+        table_create = "CREATE TABLE IF NOT EXISTS"
+        values = "(\n\tid INTEGER PRIMARY KEY AUTOINCREMENT,\n\tname TEXT)"
+        cursor.execute(f"{table_create} test_b {values}")
 
     ans = expenses.query_existing_database_tables()
-    assert 'test_b' in ans
-    assert 'test_a' in ans
+    assert "test_b" in ans
+    assert "test_a" in ans
 
 
 def test_expense_create_table(provision_expense_database):
@@ -135,8 +135,7 @@ def test_add_income(provision_income_database):
 
 
 def test_query_all_incomes(provision_income_database):
-    """
-    """
+    """ """
     incomes = provision_income_database
     incomes.create_table()
 

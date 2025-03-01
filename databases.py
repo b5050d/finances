@@ -6,15 +6,17 @@ Written by b5050d
 Here is where my database classes will live
 """
 
-import sqlite3
-import pandas as pd
 import os
+import sqlite3
+
+import pandas as pd
 
 
 class FinancesDatabase:
     """
     Abstract Class used for Database mgmt
     """
+
     def __init__(self, database_path):
         self.database_path = database_path
         self._define_constants()
@@ -57,7 +59,7 @@ class FinancesDatabase:
                 tables = [i[0] for i in tables]
             return tables
         return []
-    
+
     def query_all_in_table(self, tablename):
         """
         Query all the entries in a given table
@@ -75,7 +77,7 @@ class ExpenseDatabase(FinancesDatabase):
     def __init__(self, database_path):
         super().__init__(database_path)
 
-        self.table_name = 'expenses'
+        self.table_name = "expenses"
 
         self.sql_create_table = f"""
 CREATE TABLE IF NOT EXISTS {self.table_name} (
@@ -85,13 +87,15 @@ CREATE TABLE IF NOT EXISTS {self.table_name} (
     amount REAL NOT NULL
 )
 """
-        self.sql_add_row = "INSERT INTO expenses (category, source, amount) VALUES (?,?,?)"
+        self.sql_add_row = (
+            "INSERT INTO expenses (category, source, amount) VALUES (?,?,?)"
+        )
         # self.sql_query_all = "SELECT * FROM expenses"
 
     def create_table(self):
         """
         Create a table
-        """ 
+        """
         with sqlite3.connect(self.database_path) as conn:
             cursor = conn.cursor()
             cursor.execute(self.sql_create_table)
@@ -116,6 +120,7 @@ class IncomesDatabase(FinancesDatabase):
     """
     Class for the Incomes Database
     """
+
     def __init__(self, database_path):
         super().__init__(database_path)
         self.table_name = "incomes"
@@ -127,12 +132,14 @@ CREATE TABLE IF NOT EXISTS {self.table_name} (
     amount REAL NOT NULL
 )
 """
-        self.sql_add_row = f"INSERT INTO {self.table_name} (category, source, amount) VALUES (?,?,?)"
+        self.sql_add_row = (
+            f"INSERT INTO {self.table_name} (category, source, amount) VALUES (?,?,?)"
+        )
 
     def create_table(self):
         """
         Create a table
-        """ 
+        """
         with sqlite3.connect(self.database_path) as conn:
             cursor = conn.cursor()
             cursor.execute(self.sql_create_table)
@@ -149,5 +156,5 @@ CREATE TABLE IF NOT EXISTS {self.table_name} (
         """
         Query all entries in the income table
         and return as a dataframe
-        """        
+        """
         return self.query_all_in_table(self.table_name)
