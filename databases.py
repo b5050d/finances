@@ -35,6 +35,7 @@ class FinancesDatabase:
         # self.sql_create_table = "SELECT * FROM expenses"
 
         self.sql_query_tables = "SELECT name FROM sqlite_master WHERE type='table';"
+        self.sql_query_all = "SELECT * FROM {}"
 
     def does_database_exist(self):
         """
@@ -56,6 +57,14 @@ class FinancesDatabase:
                 tables = [i[0] for i in tables]
             return tables
         return []
+    
+    def query_all_in_table(self, tablename):
+        """
+        Query all the entries in a given table
+        """
+        with sqlite3.connect(self.database_path) as connection:
+            df = pd.read_sql(self.sql_query_all.format(tablename), connection)
+        return df
 
 
 class ExpenseDatabase(FinancesDatabase):
@@ -66,8 +75,10 @@ class ExpenseDatabase(FinancesDatabase):
     def __init__(self, database_path):
         super().__init__(database_path)
 
-        self.sql_create_table = """
-CREATE TABLE IF NOT EXISTS expenses (
+        self.table_name = 'expenses'
+
+        self.sql_create_table = f"""
+CREATE TABLE IF NOT EXISTS {self.table_name} (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     category TEXT NOT NULL,
     source TEXT NOT NULL,
@@ -75,7 +86,7 @@ CREATE TABLE IF NOT EXISTS expenses (
 )
 """
         self.sql_add_row = "INSERT INTO expenses (category, source, amount) VALUES (?,?,?)"
-        self.sql_query_all = "SELECT * FROM expenses"
+        # self.sql_query_all = "SELECT * FROM expenses"
 
     def create_table(self):
         """
@@ -98,9 +109,7 @@ CREATE TABLE IF NOT EXISTS expenses (
         Query all entries in the expense table
         and return as a dataframe
         """
-        with sqlite3.connect(self.database_path) as connection:
-            df = pd.read_sql(self.sql_query_all, connection)
-        return df
+        return self.query_all_in_table(self.table_name)
 
 
 class IncomesDatabase(FinancesDatabase):
@@ -109,10 +118,36 @@ class IncomesDatabase(FinancesDatabase):
     """
     def __init__(self, database_path):
         super().__init__(database_path)
+        self.table_name = "incomes"
+        self.sql_create_table = f"""
+CREATE TABLE IF NOT EXISTS {self.table_name} (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    category TEXT NOT NULL,
+    source TEXT NOT NULL,
+    amount REAL NOT NULL
+)
+"""
+        self.sql_add_row = f"INSERT INTO {self.table_name} (category, source, amount) VALUES (?,?,?)"
 
-    def add_income(self):
+    def create_table(self):
+        """
+        Create a table
+        """ 
+        with sqlite3.connect(self.database_path) as conn:
+            cursor = conn.cursor()
+            cursor.execute(self.sql_create_table)
+
+    def add_income(self, category, source, amount):
+        """
+        Simply add an income row to the incomes db
+        """
+        with sqlite3.connect(self.database_path) as conn:
+            cursor = conn.cursor()
+            cursor.execute(self.sql_add_row, (category, source, amount))
+
+    def query_all_incomes(self):
         """
         Query all entries in the income table
         and return as a dataframe
         """        
-        pass
+        return self.query_all_in_table(self.table_name)
