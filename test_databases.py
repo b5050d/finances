@@ -2,12 +2,14 @@
 Written by b5050d
 
 2.28.2025
+
+Testing script for the databases script
 """
 
 import pytest
 import os
 
-from data import *
+from databases import ExpenseDatabase
 import sqlite3
 
 @pytest.fixture()
@@ -48,26 +50,43 @@ def test_query_existing_database_tables(provision_expense_database):
     assert 'test_b' in ans
     assert 'test_a' in ans
 
+def test_expense_create_table(provision_expense_database):
+    expenses = provision_expense_database
+    ans = expenses.query_existing_database_tables()
+    assert ans == []
+    expenses.create_table()
+    ans = expenses.query_existing_database_tables()
+    assert "expenses" in ans
 
 def test_add_expense(provision_expense_database):
     """
     Add an expense
     """
     expenses = provision_expense_database
+    expenses.create_table()
 
+    category = "Housing"
+    source = "Rent"
+    amount = 1699.99
+    expenses.add_expense(category, source, amount)
 
+def test_query_all_expenses(provision_expense_database):
+    """
+    Add an expense
+    """
+    expenses = provision_expense_database
+    expenses.create_table()
 
+    category = "Housing"
+    source = "Rent"
+    amount = 1699.99
+    expenses.add_expense(category, source, amount)
 
+    df = expenses.query_all_expenses()
+    # Get the first row of a dataframe as a dict
+    first_row = df.iloc[0].to_dict()
 
+    assert first_row["category"] == "Housing"
+    assert first_row["source"] == "Rent"
+    assert first_row["amount"] == 1699.99
 
-# def test_create_table(tmp_path):
-#     fp = tmp_path / "test.db"
-#     assert not os.path.exists(fp)
-#     create_table(fp, "test")
-#     assert os.path.exists(fp)
-
-# def test_add_row():
-#     create_table
-
-# def test_query_all():
-#     pass
