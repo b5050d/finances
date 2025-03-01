@@ -28,7 +28,6 @@ def all_list_items_match(a_list, b_list):
         if b not in a_list:
             result = False
     return result
-        
 
 class Database:
     """
