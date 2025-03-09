@@ -84,11 +84,12 @@ CREATE TABLE IF NOT EXISTS {self.table_name} (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     category TEXT NOT NULL,
     source TEXT NOT NULL,
-    amount REAL NOT NULL
+    amount REAL NOT NULL,
+    date TEXT NOT NULL
 )
 """
         self.sql_add_row = (
-            "INSERT INTO expenses (category, source, amount) VALUES (?,?,?)"
+            "INSERT INTO expenses (category, source, amount, date) VALUES (?,?,?,?)"
         )
         # self.sql_query_all = "SELECT * FROM expenses"
 
@@ -100,13 +101,13 @@ CREATE TABLE IF NOT EXISTS {self.table_name} (
             cursor = conn.cursor()
             cursor.execute(self.sql_create_table)
 
-    def add_expense(self, category, source, amount):
+    def add_expense(self, category, source, amount, date):
         """
         Add an expense to the database
         """
         with sqlite3.connect(self.database_path) as conn:
             cursor = conn.cursor()
-            cursor.execute(self.sql_add_row, (category, source, amount))
+            cursor.execute(self.sql_add_row, (category, source, amount, date))
 
     def query_all_expenses(self):
         """
@@ -129,12 +130,12 @@ CREATE TABLE IF NOT EXISTS {self.table_name} (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     category TEXT NOT NULL,
     source TEXT NOT NULL,
-    amount REAL NOT NULL
+    amount REAL NOT NULL,
+    date TEXT NOT NULL
 )
 """
-        self.sql_add_row = (
-            f"INSERT INTO {self.table_name} (category, source, amount) VALUES (?,?,?)"
-        )
+        self.sql_add_row = f"INSERT INTO {self.table_name} "
+        self.sql_add_row += "(category, source, amount, date) VALUES (?,?,?,?)"
 
     def create_table(self):
         """
@@ -144,13 +145,13 @@ CREATE TABLE IF NOT EXISTS {self.table_name} (
             cursor = conn.cursor()
             cursor.execute(self.sql_create_table)
 
-    def add_income(self, category, source, amount):
+    def add_income(self, category, source, amount, date):
         """
         Simply add an income row to the incomes db
         """
         with sqlite3.connect(self.database_path) as conn:
             cursor = conn.cursor()
-            cursor.execute(self.sql_add_row, (category, source, amount))
+            cursor.execute(self.sql_add_row, (category, source, amount, date))
 
     def query_all_incomes(self):
         """

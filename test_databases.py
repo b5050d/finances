@@ -83,7 +83,8 @@ def test_add_expense(provision_expense_database):
     category = "Housing"
     source = "Rent"
     amount = 1699.99
-    expenses.add_expense(category, source, amount)
+    date = "2024/07/21"
+    expenses.add_expense(category, source, amount, date)
 
 
 def test_query_all_expenses(provision_expense_database):
@@ -96,7 +97,8 @@ def test_query_all_expenses(provision_expense_database):
     category = "Housing"
     source = "Rent"
     amount = 1699.99
-    expenses.add_expense(category, source, amount)
+    date = "2024/07/21"
+    expenses.add_expense(category, source, amount, date)
 
     df = expenses.query_all_expenses()
     # Get the first row of a dataframe as a dict
@@ -105,6 +107,7 @@ def test_query_all_expenses(provision_expense_database):
     assert first_row["category"] == "Housing"
     assert first_row["source"] == "Rent"
     assert first_row["amount"] == 1699.99
+    assert first_row["date"] == date
 
 
 def test_income_init(provision_income_database):
@@ -131,7 +134,8 @@ def test_add_income(provision_income_database):
     category = "Work"
     source = "AgileRF"
     amount = 2001.69
-    incomes.add_income(category, source, amount)
+    date = "2024/07/21"
+    incomes.add_income(category, source, amount, date)
 
 
 def test_query_all_incomes(provision_income_database):
@@ -142,7 +146,8 @@ def test_query_all_incomes(provision_income_database):
     category = "Work"
     source = "AgileRF"
     amount = 2001.69
-    incomes.add_income(category, source, amount)
+    date = "2024/07/21"
+    incomes.add_income(category, source, amount, date)
 
     df = incomes.query_all_incomes()
     # Get the first row of a dataframe as a dict
@@ -151,3 +156,4 @@ def test_query_all_incomes(provision_income_database):
     assert first_row["category"] == "Work"
     assert first_row["source"] == "AgileRF"
     assert first_row["amount"] == 2001.69
+    assert first_row["date"] == date
